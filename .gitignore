@@ -53,3 +53,4 @@ dkms.conf
 
 *.pdf
 my_sudo
+*.log

@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "my_exec.h": "c",
+        "my_sudo.h": "c",
+        "flags.h": "c"
+    }
+}

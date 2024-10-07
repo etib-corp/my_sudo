@@ -1,3 +1,10 @@
+##
+## EPITECH PROJECT, 2024
+## my_sudo
+## File description:
+## Makefile
+##
+
 NAME = my_sudo
 
 CC = gcc
