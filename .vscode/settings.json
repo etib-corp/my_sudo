@@ -3,6 +3,7 @@
         "*.embeddedhtml": "html",
         "my_exec.h": "c",
         "my_sudo.h": "c",
-        "flags.h": "c"
+        "flags.h": "c",
+        "set_uid.h": "c"
     }
 }

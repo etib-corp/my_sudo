@@ -29,7 +29,7 @@ int main(int argc, char **argv, char **env)
         return 0;
     }
     flags = manage_options(argv);
-    flags->_user = flags->_user == NULL ? getenv("USER") : flags->_user;
+    flags->_user = flags->_user == NULL ? "root" : flags->_user;
     print_flags(flags);
     return my_sudo(flags, argv, env);
 }

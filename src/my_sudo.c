@@ -7,6 +7,7 @@
 
 #include "my_sudo.h"
 #include "my_exec.h"
+#include "set_uid.h"
 
 static char *separeteline(char *line)
 {
@@ -73,7 +74,8 @@ char *check_command(char *cmd, char **env)
     return NULL;
 }
 
-int check_password(const char *password, char **argv, char **env)
+int check_password(flags_t *flags, const char *password, char **argv,
+    char **env)
 {
     char *path = NULL;
 
@@ -81,12 +83,13 @@ int check_password(const char *password, char **argv, char **env)
         printf("Error: password incorrect\n");
         return 84;
     }
-    path = check_command(argv[1], env);
+    path = check_command(argv[flags->_index], env);
+    set_uid(flags->_user);
     if (path == NULL) {
         printf("Error: command not found\n");
         return 84;
     }
-    my_exec(path, argv + 1);
+    my_exec(path, argv + flags->_index);
 }
 
 int my_sudo(flags_t *flags, char **argv, char **env)
@@ -97,6 +100,6 @@ int my_sudo(flags_t *flags, char **argv, char **env)
         printf("User not found\n");
         return 84;
     }
-    check_password(password, argv, env);
+    check_password(flags, password, argv, env);
     return 0;
 }
