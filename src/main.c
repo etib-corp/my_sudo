@@ -12,6 +12,49 @@
 #include <string.h>
 #include <shadow.h>
 #include <termios.h>
+#include <stdbool.h>
+
+typedef struct flags_s {
+    char *_user;
+    char *_group;
+    bool _preserve_env;
+    bool _shell;
+} flags_t;
+
+
+static flags_t *init_flags(void)
+{
+    flags_t *flags = malloc(sizeof(flags_t));
+
+    if (flags == NULL) {
+        dprintf(2, "Error: malloc failed\n");
+        return NULL;
+    }
+    flags->_user = NULL;
+    flags->_group = NULL;
+    flags->_preserve_env = false;
+    flags->_shell = false;
+    return flags;
+}
+
+static flags_t *manage_options(char **argv)
+{
+    flags_t *flags = init_flags();
+
+    if (flags == NULL)
+        return NULL;
+    for (int i = 1; argv[i] != NULL; i++) {
+        if (strcmp(argv[i], "-u") == 0)
+            flags->_user = argv[i + 1];
+        if (strcmp(argv[i], "-g") == 0)
+            flags->_group = argv[i + 1];
+        if (strcmp(argv[i], "-E") == 0)
+            flags->_preserve_env = true;
+        if (strcmp(argv[i], "-s") == 0)
+            flags->_shell = true;
+    }
+    return flags;
+}
 
 
 static char *separeteLine(char *line)
@@ -20,7 +63,7 @@ static char *separeteLine(char *line)
     return strndup(strchr(line, ':') + 1, size);
 }
 
-char *getPassword(char *user)
+static char *getPassword(char *user)
 {
     FILE *file = fopen("/etc/shadow", "r");
     char *line = NULL;
@@ -39,7 +82,7 @@ char *getPassword(char *user)
     return NULL;
 }
 
-void my_exec(char *cmd, char **args)
+static void my_exec(char *cmd, char **args)
 {
 
     printf("Executiong: %s\n", cmd);
@@ -101,13 +144,6 @@ int check_password(const char *password, char **argv, char **env)
     my_exec(path, argv + 1);
 }
 
-void help(void)
-{
-    printf("usage: ./my_sudo -h\n");
-    printf("usage: ./my_sudo [-ugEs] [command [args]]\n");
-}
-
-
 void disable_echo(void)
 {
     struct termios term;
@@ -123,10 +159,14 @@ int main(int argc, char **argv, char **env)
     if (argc < 2)
         return 84;
     if (argc == 2 && strcmp(argv[1], "-h") == 0) {
-        help();
+        printf("usage: ./my_sudo -h\n");
+        printf("usage: ./my_sudo [-ugEs] [command [args]]\n");
         return 0;
     }
-    char *password = getPassword(getenv("USER"));
+    flags_t *flags = manage_options(argv);
+
+    flags->_user = flags->_user == NULL ? getenv("USER") : flags->_user;
+    char *password = getPassword(flags->_user);
     if (password == NULL) {
         printf("User not found\n");
         return 84;
